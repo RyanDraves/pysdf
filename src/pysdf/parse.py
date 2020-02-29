@@ -71,8 +71,9 @@ def find_model_in_gazebo_dir(modelname):
           files.remove(canonical_sdf_name)
           files = [canonical_sdf_name] + files
         for currfile in files:
-          if not currfile.endswith('.sdf'):
+          if not currfile.endswith('.sdf') and not currfile.endswith('.world'):
             continue
+          # print(currfile)
           filename_path = os.path.join(dirpath, currfile)
           try:
             tree = ET.parse(filename_path)
@@ -82,14 +83,17 @@ def find_model_in_gazebo_dir(modelname):
           root = tree.getroot()
           if root.tag != 'sdf':
             continue
-          modelnode = get_node(root, 'model')
-          if modelnode == None:
+          if currfile.endswith('.world'):
+            root = get_node(root, 'world')
+          modelnodes = get_node(root, 'model', multiple_nodes=True)
+          if modelnodes == None:
             continue
-          modelname_in_file = modelnode.attrib['name']
-          if modelname_in_file not in find_model_in_gazebo_dir.cache:
-            #print('Adding (name=%s, path=%s) to model cache' % (modelname_in_file, filename_path))
-            find_model_in_gazebo_dir.cache[modelname_in_file] = filename_path
-    #print(find_model_in_gazebo_dir.cache)
+          for modelnode in modelnodes:
+            modelname_in_file = modelnode.attrib['name']
+            if modelname_in_file not in find_model_in_gazebo_dir.cache:
+              # print('Adding (name=%s, path=%s) to model cache' % (modelname_in_file, filename_path))
+              find_model_in_gazebo_dir.cache[modelname_in_file] = filename_path
+    # print(find_model_in_gazebo_dir.cache)
   if '/' in modelname:  # path-based
     for models_path in models_paths + ['.']:
       modelfile_paths = glob.glob(os.path.join(models_path, modelname, '*.sdf'))
@@ -116,10 +120,12 @@ def get_tag(node, tagname, default = None):
   else:
     return default
 
-def get_node(node, tagname, default = None):
+def get_node(node, tagname, default = None, multiple_nodes=False):
   tag = node.findall(tagname)
-  if tag:
+  if tag and not multiple_nodes:
     return tag[0]
+  elif tag and multiple_nodes:
+    return tag
   else:
     return default
 
@@ -136,6 +142,9 @@ def indent(string, spaces):
 def model_from_include(parent, include_node):
     submodel_uri = get_tag(include_node, 'uri')
     submodel_uri = submodel_uri.replace('model://', '')
+    if submodel_uri == "sun":
+      # print("Manually ignoring the sun...")
+      return
     submodel_path = find_model_in_gazebo_dir(submodel_uri)
     if not submodel_path:
       print('Failed to find included model (URI: %s)' % submodel_uri)
@@ -204,8 +213,9 @@ class World(object):
       for include_node in node.findall('include'):
         included_model = model_from_include(None, include_node)
         if not included_model:
-          print('Failed to include model, see previous errors. Aborting.')
-          sys.exit(1)
+            continue
+        #   print('Failed to include model, see previous errors. Aborting.')
+        #   sys.exit(1)
         self.models.append(included_model)
       # TODO lights
     self.models += [Model(tree=model_node, version=self.version) for model_node in node.findall('model')]
