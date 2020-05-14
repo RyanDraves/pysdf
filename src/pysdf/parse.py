@@ -23,7 +23,7 @@ mesh_path_env_name='MESH_WORKSPACE_PATH'
 if mesh_path_env_name in os.environ:
   catkin_ws_path = os.environ[mesh_path_env_name]
 else:
-  catkin_ws_path = os.path.expanduser('~') + '/catkin_ws/src/'
+  catkin_ws_path = os.path.expanduser('~') + '/UMA/UMARepo/src/tools/uma_tools'
 supported_sdf_versions = [1.4, 1.5, 1.6]
 
 catkin_ws_path_exists = os.path.exists(catkin_ws_path)
@@ -66,6 +66,11 @@ def find_model_in_gazebo_dir(modelname):
   canonical_sdf_name = 'model.sdf'
   if not find_model_in_gazebo_dir.cache:
     for models_path in models_paths:
+      print("[PDSDF TMP] {}".format(models_path))
+      print("[PDSDF TMP] {}".format(models_path))
+      print("[PDSDF TMP] {}".format(models_path))
+      print("[PDSDF TMP] {}".format(models_path))
+      print("[PDSDF TMP] {}".format(models_path))
       for dirpath, dirs, files in os.walk(models_path, followlinks=True):
         if canonical_sdf_name in files:
           files.remove(canonical_sdf_name)
