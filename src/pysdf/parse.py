@@ -66,6 +66,11 @@ def find_model_in_gazebo_dir(modelname):
   canonical_sdf_name = 'model.sdf'
   if not find_model_in_gazebo_dir.cache:
     for models_path in models_paths:
+      print("[PDSDF TMP] {}".format(models_path))
+      print("[PDSDF TMP] {}".format(models_path))
+      print("[PDSDF TMP] {}".format(models_path))
+      print("[PDSDF TMP] {}".format(models_path))
+      print("[PDSDF TMP] {}".format(models_path))
       for dirpath, dirs, files in os.walk(models_path, followlinks=True):
         if canonical_sdf_name in files:
           files.remove(canonical_sdf_name)
